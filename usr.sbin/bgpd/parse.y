@@ -215,7 +215,7 @@ typedef struct {
 %token	ASSET SOURCEAS TRANSITAS PEERAS MAXASLEN MAXASSEQ
 %token	SET LOCALPREF MED METRIC NEXTHOP REJECT BLACKHOLE NOMODIFY SELF
 %token	PREPEND_SELF PREPEND_PEER PFTABLE WEIGHT RTLABEL ORIGIN PRIORITY
-%token	ERROR INCLUDE
+%token	REMOVEPRIVATEAS ERROR INCLUDE
 %token	IPSEC ESP AH SPI IKE
 %token	IPV4 IPV6
 %token	QUALIFY VIA
@@ -2569,6 +2569,11 @@ filter_set_opt	: LOCALPREF NUMBER		{
 				fatal(NULL);
 			$$->type = ACTION_SET_AS_OVERRIDE;
 		}
+		| REMOVEPRIVATEAS			{
+			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
+				fatal(NULL);
+			$$->type = ACTION_SET_REMOVE_PRIVATE_AS;
+		}
 		| PFTABLE STRING		{
 			if (($$ = calloc(1, sizeof(struct filter_set))) == NULL)
 				fatal(NULL);
@@ -2861,6 +2866,7 @@ lookup(char *s)
 		{ "refresh",		REFRESH },
 		{ "reject",		REJECT},
 		{ "remote-as",		REMOTEAS},
+		{ "remove-private-as",	REMOVEPRIVATEAS},
 		{ "restart",		RESTART},
 		{ "restricted",		RESTRICTED},
 		{ "rib",		RIB},

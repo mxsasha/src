@@ -296,6 +296,9 @@ print_set(struct filter_set_head *set)
 		case ACTION_SET_LOCALPREF:
 			printf("localpref %u ", s->action.metric);
 			break;
+		case ACTION_SET_REMOVE_PRIVATE_AS:
+			printf("remove-private-as");
+			break;
 		case ACTION_SET_RELATIVE_LOCALPREF:
 			printf("localpref %+d ", s->action.relative);
 			break;

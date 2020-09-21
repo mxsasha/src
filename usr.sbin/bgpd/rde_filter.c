@@ -171,6 +171,12 @@ rde_apply_set(struct filter_set_head *sh, struct rde_peer *peer,
 		case ACTION_SET_ORIGIN:
 			state->aspath.origin = set->action.origin;
 			break;
+		case ACTION_SET_REMOVE_PRIVATE_AS:
+			np = aspath_remove_private_as(state->aspath.aspath, &nl);
+			aspath_put(state->aspath.aspath);
+			state->aspath.aspath = aspath_get(np, nl);
+			free(np);
+			break;
 		}
 	}
 }
@@ -579,6 +585,7 @@ filterset_equal(struct filter_set_head *ah, struct filter_set_head *bh)
 		case ACTION_SET_NEXTHOP_REJECT:
 		case ACTION_SET_NEXTHOP_NOMODIFY:
 		case ACTION_SET_NEXTHOP_SELF:
+		case ACTION_SET_REMOVE_PRIVATE_AS:
 			if (a->type == b->type)
 				continue;
 			break;
@@ -674,6 +681,8 @@ filterset_name(enum action_types type)
 		return ("rtlabel");
 	case ACTION_SET_ORIGIN:
 		return ("origin");
+	case ACTION_SET_REMOVE_PRIVATE_AS:
+		return ("remove-private-as");
 	}
 
 	fatalx("filterset_name: got lost");
