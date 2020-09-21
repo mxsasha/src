@@ -25,10 +25,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <siphash.h>
+#include <stdio.h>
 
 #include "bgpd.h"
 #include "rde.h"
 #include "log.h"
+
+#define IS_PRIVATE_AS(as) ((as >= 64512 && as <= 65534) || (as >= 4200000000 && as <= 4294967294))
 
 int
 attr_write(void *p, u_int16_t p_len, u_int8_t flags, u_int8_t type,
@@ -1103,6 +1106,52 @@ aspath_override(struct aspath *asp, u_int32_t neighbor_as, u_int32_t local_as,
 	}
 
 	*len = asp->len;
+	return (p);
+}
+
+/*
+ * Returns a new aspath where private ASes are removed.
+ */
+u_char *
+aspath_remove_private_as(struct aspath *asp, u_int16_t *len)
+{
+	u_char		*p, *seg, *nseg, *nseg_len;
+	u_int32_t	 as;
+	u_int16_t	 l, seg_size;
+	u_int8_t	 i, seg_len, seg_type, public_asn_seen;
+
+	p = malloc(asp->len);
+	if (p == NULL)
+		fatal("aspath_remove_private_as");
+
+	seg = asp->data;
+	nseg = p;
+	*len = asp->len;
+	public_asn_seen = 0;
+
+	for (l = asp->len; l > 0; l -= seg_size, seg += seg_size) {
+		*nseg++ = seg_type = seg[0];
+		nseg_len = nseg;
+		*nseg++ = seg_len = seg[1];
+		seg_size = 2 + sizeof(u_int32_t) * seg_len;
+
+		for (i = 0; i < seg_len; i++) {
+			as = aspath_extract(seg, i);
+			if (!public_asn_seen && IS_PRIVATE_AS(as)) {
+				*len -= sizeof(as);
+				--*nseg_len;
+			} else {
+				public_asn_seen = 1;
+				as = htonl(as);
+				memcpy(nseg, &as, sizeof(as));
+				nseg += sizeof(as);
+			}
+		}
+
+		if (seg_size > l)
+			fatalx("%s: would overflow", __func__);
+	}
+
 	return (p);
 }
 

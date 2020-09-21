@@ -434,6 +434,7 @@ int		 aspath_match(struct aspath *, struct filter_as *, u_int32_t);
 u_char		*aspath_prepend(struct aspath *, u_int32_t, int, u_int16_t *);
 u_char		*aspath_override(struct aspath *, u_int32_t, u_int32_t,
 		    u_int16_t *);
+u_char		*aspath_remove_private_as(struct aspath *, u_int16_t *);
 int		 aspath_lenmatch(struct aspath *, enum aslen_spec, u_int);
 
 /* rde_community.c */

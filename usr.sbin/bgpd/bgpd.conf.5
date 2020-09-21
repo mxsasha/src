@@ -1862,6 +1862,12 @@ Prepend the local AS
 times to the
 .Em AS path .
 .Pp
+.It Ic remove-private-as
+Remove all private AS numbers from the beginning (left) of the
+.Em AS path .
+Private AS numbers that occur after a public ASN in the path are
+left in place.
+.Pp
 .It Ic rtlabel Ar label
 Add the prefix to the kernel routing table with the specified
 .Ar label .
